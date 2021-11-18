@@ -1,0 +1,4 @@
+nonebot2
+nonebot-adapter-cqhttp
+httpx
+aiohttp

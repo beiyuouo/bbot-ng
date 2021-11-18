@@ -1,0 +1,58 @@
+version: "3"
+services:
+  nonebot:
+    build: .
+    volumes:
+      - "/etc/localtime:/etc/localtime"
+      - "./:/bbot-ng/"
+     ports:
+      - "8080:8080"
+    env_file:
+      - ".env.dev"
+    environment:
+      - ENVIRONMENT=dev
+      - APP_MODULE=bot:app
+      - SECRET # 通过 SECRET=xxx nb up -d 传递密钥
+      - ACCESS_TOKEN # 通过 ACCESS_TOKEN=xxx nb up -d 传递密钥
+      - MAX_WORKERS=1 # 如果你有多个QQ，且存在 self_id 指定，多个 worker 会导致无法找到其他 websocket 连接
+
+  go-cqhttp:
+    image: wevsmy/go-cqhttp:latest
+    container_name: go-cqhttp
+    restart: always
+    expose:
+      - 5700
+      - 6700
+    ports:
+      - 5700:5700
+      - 6700:6700
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./volumes/go-cqhttp/data:/data
+
+  chrome:
+    image: selenium/standalone-chrome:89.0
+    # image: selenium/standalone-chrome-debug:3.141.59
+    # image: selenium/standalone-firefox:80.0
+    container_name: chrome
+    restart: always
+    ports:
+      - "4444:4444"
+      - "5900:5900"
+    environment:
+      VNC_NO_PASSWORD: 1
+      SCREEN_WIDTH: 1920 # set for xvfb
+      SCREEN_HEIGHT: 1080
+    volumes:
+      - /etc/localtime:/etc/localtime
+    shm_size: 2g
+    dns:
+      - 223.5.5.5
+      - 223.6.6.6
+    extra_hosts:
+      - "free-ss.site:104.18.18.18"
+
+networks:
+  default:
+    external:
+      name: gateway
