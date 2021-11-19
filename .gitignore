@@ -53,3 +53,4 @@ __pycache__
 .env.dev
 go-cqhttp
 *.db
+config.yml

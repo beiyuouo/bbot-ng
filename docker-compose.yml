@@ -5,7 +5,6 @@ services:
     build: .
     volumes:
       - "/etc/localtime:/etc/localtime"
-      - "./:/bbot-ng/"
     restart: always
     container_name: bbot-ng
     ports:
