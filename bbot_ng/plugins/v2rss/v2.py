@@ -8,6 +8,7 @@
 @License :   Apache License 2.0 
 """
 
+import time
 import random
 
 import json
@@ -49,12 +50,39 @@ async def list_handle(bot: Bot, event: Event, state: T_State):
 
 
 async def usage_handle(bot: Bot, event: Event, state: T_State):
-    usage_factory = {}
+    usage_factory = {
+        'today': get_usage(int(time.time()) - 24 * 60 * 60),
+        'week': get_usage(int(time.time()) - 7 * 24 * 60 * 60),
+        'month': get_usage(int(time.time()) - 30 * 24 * 60 * 60),
+        'year': get_usage(int(time.time()) - 365 * 24 * 60 * 60),
+        'all': get_usage(0),
+    }
+    args = state["args"][0] if len(state["args"]) > 0 else None
+    logger.debug(f"args: {args}")
+
+    if args in usage_factory.keys():
+        usage_func = usage_factory[args]
+        usage = await usage_func
+        usage = usage[0] if usage else None
+        if usage:
+            await v2.finish(f'{args} usage: {usage}')
+        else:
+            await v2.finish(f'No {args} usage')
+    else:
+        await v2.finish(f"usage: {usage_factory.keys()}")
 
 
 async def vv_handle(bot: Bot, event: Event, state: T_State):
     sub_id = state["args"][0] if len(state["args"]) > 0 else None
     logger.debug(f"sub_id: {sub_id}")
+    logger.debug(f"user_id:{event.user_id}")
+
+    last_ = await get_last_time(event.user_id)
+    last_ = int(last_[0]) if last_ else None
+    logger.debug(f"last_: {last_}")
+    if last_ is not None and time.time() - last_ < COOLDOWN:
+        await v2.finish(f"You are too fast")
+        return
 
     try:
         if sub_id is None:
@@ -69,6 +97,7 @@ async def vv_handle(bot: Bot, event: Event, state: T_State):
         logger.error(f"{e}")
         await v2.finish(f"No response")
 
+    await insert_usage(event.user_id, int(time.time()), sub_id)
     await v2.finish(resp)
 
 
@@ -121,7 +150,7 @@ async def args_handle(bot: Bot, event: Event, state: T_State):
 
     if args:
         cmd = args[0]
-        if cmd in handle_factory:
+        if cmd in handle_factory.keys():
             state["args"] = args[1:]
             await handle_factory[cmd](bot, event, state)
         else:

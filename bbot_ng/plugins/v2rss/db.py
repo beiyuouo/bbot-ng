@@ -9,7 +9,10 @@
 """
 
 import os
+import uuid
 import sqlite3
+
+from nonebot.log import logger
 
 os.makedirs('dbs', exist_ok=True)
 db = sqlite3.connect(os.path.join('dbs', 'v2rss.db'))
@@ -19,41 +22,41 @@ cursor.execute('''
     CREATE TABLE IF NOT EXISTS v2rss (
         uuid TEXT PRIMARY KEY,
         user_id TEXT,
-        datetime DATETIME,
+        timestamp INTEGER,
         sub TEXT)
 ''')
 
 
-def get_usage():
-    pass
-
-
-def get_usage_by_user(user_id):
-    cursor.execute(
-        '''
-        SELECT uuid, datetime, sub FROM v2rss WHERE user_id = ?
-    ''', (user_id, ))
-
-    cursor.execute(
-        '''
-        SELECT COUNT(*) FROM v2rss WHERE user_id = ?
-    ''', (user_id, ))
+async def get_usage(time_after: int):
+    cursor.execute('SELECT COUNT(*) FROM v2rss WHERE timestamp > ?',
+                   (time_after, ))
     return cursor.fetchone()
 
 
-def insert_usage(uuid, user_id, datetime, sub):
+async def get_usage_by_user(user_id: str):
     cursor.execute(
         '''
-        INSERT INTO v2rss (uuid, user_id, datetime, sub)
+        SELECT COUNT(*) FROM v2rss WHERE user_id = ? GROUP BY sub
+    ''', (user_id, ))
+
+    return cursor.fetchall()
+
+
+async def insert_usage(user_id: str, timestamp: int, sub: str):
+    cursor.execute(
+        '''
+        INSERT INTO v2rss (uuid, user_id, timestamp, sub)
         VALUES (?, ?, ?, ?)
-    ''', (uuid, user_id, datetime, sub))
+    ''', (str(uuid.uuid1()), user_id, timestamp, sub))
+    logger.debug(
+        f"insert_usage: {str(uuid.uuid1())}, {user_id}, {timestamp}, {sub}")
     db.commit()
 
 
-def check_time(user_id):
+async def get_last_time(user_id):
     cursor.execute(
         '''
-        SELECT datetime FROM v2rss WHERE user_id = ?
+        SELECT timestamp FROM v2rss WHERE user_id = ?
     ''', (user_id, ))
     return cursor.fetchone()
 

@@ -20,3 +20,5 @@ SUPERUSERS = config.superusers
 
 if config.test:
     ALKAID_GET_SUBS_BY_ID = ALKAID_GET_SUBS_DEBUG
+
+COOLDOWN = config.cooldown
