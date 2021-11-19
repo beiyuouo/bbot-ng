@@ -23,8 +23,3 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime
       - ./go-cq-config:/data
-
-networks:
-  default:
-    external:
-      name: gateway
