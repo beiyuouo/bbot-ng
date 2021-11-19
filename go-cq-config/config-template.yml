@@ -28,7 +28,7 @@ message:
   # 是否强制分片发送消息
   # 分片发送将会带来更快的速度
   # 但是兼容性会有些问题
-  force-fragment: true
+  force-fragment: false
   # 是否将url分片发送
   fix-url: false
   # 下载图片等请求网络代理
@@ -39,10 +39,16 @@ message:
   remove-reply-at: false
   # 为Reply附加更多信息
   extra-reply-data: false
+  # 跳过 Mime 扫描, 忽略错误数据
+  skip-mime-scan: false
 
 output:
   # 日志等级 trace,debug,info,warn,error
   log-level: warn
+  # 日志时效 单位天. 超过这个时间之前的日志将会被自动删除. 设置为 0 表示永久保留.
+  log-aging: 15
+  # 是否在每次启动时强制创建全新的文件储存日志. 为 false 的情况下将会在上次启动时创建的日志文件续写
+  log-force-new: true
   # 是否启用 DEBUG
   debug: false # 开启调试模式
 
@@ -68,6 +74,11 @@ database: # 数据库相关设置
     # 关闭将无法使用 撤回 回复 get_msg 等上下文相关功能
     enable: true
 
+  # 媒体文件缓存， 删除此项则使用缓存文件(旧版行为)
+  cache:
+    image: data/image.db
+    video: data/video.db
+
 # 连接服务列表
 servers:
   # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
@@ -75,31 +86,6 @@ servers:
   #- ws:   # 正向 Websocket
   #- ws-reverse: # 反向 Websocket
   #- pprof: #性能分析服务器
-  # HTTP 通信设置
-  - http:
-      # 服务端监听地址
-      host: 127.0.0.1
-      # 服务端监听端口
-      port: 5700
-      # 反向HTTP超时时间, 单位秒
-      # 最小值为5，小于5将会忽略本项设置
-      timeout: 5
-      middlewares:
-        <<: *default # 引用默认中间件
-      # 反向HTTP POST地址列表
-      post:
-      #- url: '' # 地址
-      #  secret: ''           # 密钥
-      #- url: 127.0.0.1:5701 # 地址
-      #  secret: ''          # 密钥
-  # 正向WS设置
-  - ws:
-      # 正向WS服务器监听地址
-      host: 127.0.0.1
-      # 正向WS服务器监听端口
-      port: 6700
-      middlewares:
-        <<: *default # 引用默认中间件
   # 反向WS设置
   - ws-reverse:
       # 反向WS Universal 地址
@@ -113,11 +99,3 @@ servers:
       reconnect-interval: 3000
       middlewares:
         <<: *default # 引用默认中间件
-  # pprof 性能分析服务器, 一般情况下不需要启用.
-  # 如果遇到性能问题请上传报告给开发者处理
-  # 注意: pprof服务不支持中间件、不支持鉴权. 请不要开放到公网
-  - pprof:
-      # pprof服务器监听地址
-      host: 127.0.0.1
-      # pprof服务器监听端口
-      port: 7700

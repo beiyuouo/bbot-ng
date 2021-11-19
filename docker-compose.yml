@@ -3,14 +3,10 @@ version: "3"
 services:
   nonebot:
     build: .
-    volumes:
-      - "/etc/localtime:/etc/localtime"
     restart: always
     container_name: bbot-ng
     ports:
       - "666:9999"
-    env_file:
-      - ".env.dev"
 
   go-cqhttp:
     image: silicer/go-cqhttp:latest
