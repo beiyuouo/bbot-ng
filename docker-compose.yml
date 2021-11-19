@@ -9,7 +9,7 @@ services:
     restart: always
     container_name: bbot-ng
     ports:
-      - "8080:8080"
+      - "666:9999"
     env_file:
       - ".env.dev"
 
@@ -19,12 +19,8 @@ services:
     restart: always
     depends_on:
       - nonebot
-    expose:
-      - 5700
-      - 6700
     ports:
-      - 5700:5700
-      - 6700:6700
+      - "777:9999"
     volumes:
       - /etc/localtime:/etc/localtime
       - ./go-cq-config:/data
