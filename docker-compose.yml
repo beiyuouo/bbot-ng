@@ -8,7 +8,7 @@ services:
     ports:
       - "666:9999"
     volumes:
-      - ./dbs:./bbot-ng/dbs
+      - ./dbs:/bbot-ng/dbs
 
   go-cqhttp:
     image: silicer/go-cqhttp:latest
