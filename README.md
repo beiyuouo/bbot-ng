@@ -19,5 +19,17 @@ vi go-cq-config/config.yml
 
 # 起飞
 docker-compose up -d
+
+# 首次登陆可能需要扫描二维码
+docker-compose logs -f
 ```
 
+
+## Rebuild Environment
+```shell
+docker-compose down
+docker-compose rm -v
+docker images
+docker image rm bbot-ng_nonebot
+docker-compose up -d
+```
