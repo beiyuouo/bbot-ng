@@ -117,7 +117,8 @@ async def get_sub(sub_id: str = '') -> str:
                 sub_id = temp_dict[sub_id]
             else:
                 await v2.finish(f"No such subscribe")
-        resp = await client.post(ALKAID_GET_SUBS_BY_ID, data={'alias': f'Action{sub_id}Cloud'})
+
+        resp = await client.post(ALKAID_GET_SUBS_BY_ID, json={'alias': f'Action{sub_id}Cloud'})
         resp = resp.text
         logger.debug(f"get resp from alkaid: {resp}")
         try:
