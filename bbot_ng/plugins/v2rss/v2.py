@@ -8,6 +8,7 @@
 @License :   Apache License 2.0 
 """
 
+from re import sub
 import time
 import random
 
@@ -111,12 +112,20 @@ async def get_list():
 
 async def get_sub(sub_id: str = '') -> str:
     async with httpx.AsyncClient() as client:
-        resp = await client.get(ALKAID_GET_SUBS_BY_ID + sub_id)
+        if sub_id.isnumeric():
+            if sub_id in temp_dict.keys():
+                sub_id = temp_dict[sub_id]
+            else:
+                await v2.finish(f"No such subscribe")
+        resp = await client.post(ALKAID_GET_SUBS_BY_ID, data={'alias': f'Action{sub_id}Cloud'})
         resp = resp.text
         logger.debug(f"get resp from alkaid: {resp}")
         try:
-            resp = json.loads(resp)['info']['subscribe']
-            return resp
+            resp = json.loads(resp)
+            if resp['msg'] != 'success':
+                await v2.finish(f"No such subscribe")
+            else:
+                return resp['subscribe']
         except json.decoder.JSONDecodeError:
             logger.error(f"resp from alkaid is not json: {resp}")
             await v2.finish(f"JSONDecodeError")
@@ -128,7 +137,7 @@ async def get_random_sub() -> str:
         resp = resp.text
         logger.debug(f"get resp from alkaid: {resp}")
         try:
-            resp = json.loads(resp)['info']['subscribe']
+            resp = json.loads(resp)['subscribe']
             return resp
         except json.decoder.JSONDecodeError:
             logger.error(f"resp from alkaid is not json: {resp}")

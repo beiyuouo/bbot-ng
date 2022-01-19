@@ -1,18 +1,17 @@
 import re
 
+temp_dict = {}
+
 
 def format_list(data) -> str:
     msg = ""
+    itr = 0
+    temp_dict.clear()
 
-    ssr_list = data['info']['ssr']
-    msg = "ssr:\n"
-    for ssr_url in ssr_list:
-        msg += f" {get_url_abbr(ssr_url)} -> {ssr_list[ssr_url]}\n"
-
-    v2_list = data['info']['v2ray']
-    msg += "v2ray:\n"
-    for v2_url in v2_list:
-        msg += f" {get_url_abbr(v2_url)} -> {v2_list[v2_url]}\n"
+    for item in data['status']:
+        itr += 1
+        msg += f" [{itr}] {item[6:-5]} -> {data['status'][item]}\n"
+        temp_dict[str(itr)] = item[6:-5]
 
     return msg
 
