@@ -12,13 +12,10 @@ config = nonebot.Config(**global_config.dict())
 logger.info(f"config: {config}")
 
 ALKAID_HOST = config.alkaid_host
-ALKAID_GET_SUBS_DEBUG = ALKAID_HOST + config.alkaid_get_subs_debug
-ALKAID_GET_SUBS = ALKAID_HOST + config.alkaid_get_subs
+ALKAID_GET_SUBS_STATUS = ALKAID_HOST + config.alkaid_get_subs_status
+ALKAID_GET_SUBS_RANDOM = ALKAID_HOST + config.alkaid_get_subs_random
 ALKAID_GET_SUBS_BY_ID = ALKAID_HOST + config.alkaid_get_subs_by_id
 
 SUPERUSERS = config.superusers
-
-if config.test:
-    ALKAID_GET_SUBS_BY_ID = ALKAID_GET_SUBS_DEBUG
 
 COOLDOWN = config.cooldown

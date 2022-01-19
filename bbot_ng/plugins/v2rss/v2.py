@@ -26,9 +26,9 @@ from .utils import *
 
 v2 = on_command("vv", rule=to_me(), priority=1, aliases=set(['v2', 'ycj']))
 
-help_msg = """vv [list|help|usage|about]"""
+help_msg = """vv [list|help|usage|about]\n · list: list all v2ray subscribe\n · help: show this message\n · usage: show usage of vv（admin)\n · about: show about of vv"""
 
-about_msg = """vv is a plugin for v2rss."""
+about_msg = """vv is a plugin for v2rss maintained by @BeiYu. v2rss is a v2ray subscribe collector maintain by @QIN2DIM."""
 
 
 async def help_handle(bot: Bot, event: Event, state: T_State):
@@ -82,17 +82,12 @@ async def vv_handle(bot: Bot, event: Event, state: T_State):
     logger.debug(f"last_: {last_}")
     if last_ is not None and time.time() - last_ < COOLDOWN:
         await v2.finish(f"You are too fast")
-        return
 
     try:
         if sub_id is None:
-            resp = await get_list()
-            logger.debug(f"resp: {resp}")
-            logger.debug(
-                f"{random.choice(list(resp['info']['v2ray'].keys()))}")
-            sub_id = random.choice(list(resp['info']['v2ray'].keys()))
-            logger.debug(f"random sub_id: {sub_id}")
-        resp = await get_sub(sub_id)
+            resp = await get_random_sub()
+        else:
+            resp = await get_sub(sub_id)
     except Exception as e:
         logger.error(f"{e}")
         await v2.finish(f"No response")
@@ -104,7 +99,7 @@ async def vv_handle(bot: Bot, event: Event, state: T_State):
 async def get_list():
     async with httpx.AsyncClient() as client:
         try:
-            resp = await client.get(ALKAID_GET_SUBS)
+            resp = await client.get(ALKAID_GET_SUBS_STATUS)
             resp = resp.text
             logger.debug(f"get resp from alkaid: {resp}")
             resp = json.loads(resp)
@@ -117,6 +112,19 @@ async def get_list():
 async def get_sub(sub_id: str = '') -> str:
     async with httpx.AsyncClient() as client:
         resp = await client.get(ALKAID_GET_SUBS_BY_ID + sub_id)
+        resp = resp.text
+        logger.debug(f"get resp from alkaid: {resp}")
+        try:
+            resp = json.loads(resp)['info']['subscribe']
+            return resp
+        except json.decoder.JSONDecodeError:
+            logger.error(f"resp from alkaid is not json: {resp}")
+            await v2.finish(f"JSONDecodeError")
+
+
+async def get_random_sub() -> str:
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(ALKAID_GET_SUBS_RANDOM)
         resp = resp.text
         logger.debug(f"get resp from alkaid: {resp}")
         try:
