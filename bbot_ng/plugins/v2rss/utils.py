@@ -1,6 +1,7 @@
 import re
 
 temp_dict = {}
+lower2original = {}
 
 
 def format_list(data) -> str:
@@ -12,6 +13,7 @@ def format_list(data) -> str:
         itr += 1
         msg += f" [{itr}] {item[6:-5]} -> {data['status'][item]}\n"
         temp_dict[str(itr)] = item[6:-5]
+        lower2original[item[6:-5].lower()] = item[6:-5]
 
     return msg
 

@@ -91,7 +91,7 @@ async def vv_handle(bot: Bot, event: Event, state: T_State):
             resp = await get_sub(sub_id)
     except Exception as e:
         logger.error(f"{e}")
-        await v2.finish(f"No response")
+        await v2.finish(f"{e.args[0]}")
 
     await insert_usage(event.user_id, int(time.time()), sub_id)
     await v2.finish(resp)
@@ -107,16 +107,25 @@ async def get_list():
             return resp
         except json.decoder.JSONDecodeError:
             logger.error(f"resp from alkaid is not json: {resp}")
-            await v2.finish(f"JSONDecodeError")
+            raise Exception(f"JSONDecodeError")
 
 
 async def get_sub(sub_id: str = '') -> str:
     async with httpx.AsyncClient() as client:
+        if temp_dict is None or len(temp_dict) == 0 or lower2original.keys() is None or len(
+                lower2original) == 0:
+            await v2.send(f"Please use vv list first")
+            raise Exception(f"EmptyError")
+
         if sub_id.isnumeric():
             if sub_id in temp_dict.keys():
                 sub_id = temp_dict[sub_id]
             else:
-                await v2.finish(f"No such subscribe")
+                raise Exception("UnknownError")
+
+        sub_id = sub_id.replace(' ', '')
+        sub_id = sub_id.lower()
+        sub_id = lower2original[sub_id] if sub_id in lower2original.keys() else sub_id
 
         resp = await client.post(ALKAID_GET_SUBS_BY_ID, json={'alias': f'Action{sub_id}Cloud'})
         resp = resp.text
@@ -124,12 +133,12 @@ async def get_sub(sub_id: str = '') -> str:
         try:
             resp = json.loads(resp)
             if resp['msg'] != 'success':
-                await v2.finish(f"No such subscribe")
+                raise Exception("RequestError")
             else:
                 return resp['subscribe']
         except json.decoder.JSONDecodeError:
             logger.error(f"resp from alkaid is not json: {resp}")
-            await v2.finish(f"JSONDecodeError")
+            raise Exception(f"JSONDecodeError")
 
 
 async def get_random_sub() -> str:
